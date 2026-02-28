@@ -120,6 +120,55 @@ table.at tbody tr:hover td{background:rgba(207,192,126,.015);}
 .sc-n{font-family:'DM Mono',monospace;font-size:10px;width:20px;text-align:right;color:var(--text);}
 .row-btn{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;background:rgba(5,7,7,.8);border:1px solid var(--br);color:var(--m1);cursor:none;transition:all .14s;}
 .row-btn:hover{border-color:rgba(207,192,126,.3);color:var(--gold);}
+
+/* ── PRODUCT DRAWER ── */
+#prod-drawer{
+  position:fixed;top:0;right:-520px;width:500px;height:100vh;
+  background:rgba(8,8,7,.97);border-left:1px solid rgba(207,192,126,.15);
+  z-index:200;transition:right .45s cubic-bezier(.23,1,.32,1);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:rgba(207,192,126,.12) transparent;
+  backdrop-filter:blur(20px);
+}
+#prod-drawer.open{right:0;}
+#prod-drawer::-webkit-scrollbar{width:3px;}
+#prod-drawer::-webkit-scrollbar-thumb{background:rgba(207,192,126,.12);}
+.pd-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;border-bottom:1px solid rgba(207,192,126,.1);
+  position:sticky;top:0;background:rgba(8,8,7,.97);z-index:2;
+}
+.pd-close{
+  font-family:'Press Start 2P',monospace;font-size:7px;
+  color:rgba(207,192,126,.4);background:none;
+  border:1px solid rgba(207,192,126,.12);padding:6px 12px;cursor:pointer;
+  transition:all .2s;letter-spacing:.12em;
+}
+.pd-close:hover{color:rgba(207,192,126,.9);border-color:rgba(207,192,126,.4);}
+.pd-body{padding:28px 24px 60px;}
+.pd-name{font-family:'Press Start 2P',monospace;font-size:13px;color:rgba(207,192,126,.92);letter-spacing:.08em;margin-bottom:4px;}
+.pd-ticker{font-family:'DM Mono',monospace;font-size:10px;color:rgba(207,192,126,.4);letter-spacing:.2em;margin-bottom:20px;}
+.pd-desc{font-family:'DM Mono',monospace;font-size:9px;color:rgba(232,232,198,.5);letter-spacing:.06em;line-height:2;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid rgba(207,192,126,.07);}
+.pd-sec{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(207,192,126,.35);letter-spacing:.25em;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.pd-sec::after{content:'';flex:1;height:1px;background:rgba(207,192,126,.07);}
+.pd-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.pd-kpi{background:rgba(207,192,126,.03);border:1px solid rgba(207,192,126,.08);padding:14px 16px;}
+.pd-kv{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:rgba(207,192,126,.9);line-height:1;margin-bottom:4px;}
+.pd-kl{font-family:'DM Mono',monospace;font-size:7px;color:rgba(232,232,198,.3);letter-spacing:.15em;text-transform:uppercase;}
+.pd-score-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.pd-score-lbl{font-family:'DM Mono',monospace;font-size:8px;color:rgba(232,232,198,.4);letter-spacing:.1em;}
+.pd-score-val{font-family:'DM Mono',monospace;font-size:8px;color:rgba(207,192,126,.8);}
+.pd-score-bar{width:100%;height:2px;background:rgba(255,255,255,.05);margin-top:5px;margin-bottom:16px;}
+.pd-score-fill{height:100%;background:linear-gradient(90deg,rgba(207,192,126,.3),rgba(207,192,126,.9));}
+.pd-link{font-family:'DM Mono',monospace;font-size:8px;color:rgba(207,192,126,.5);letter-spacing:.1em;
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border:1px solid rgba(207,192,126,.1);background:rgba(207,192,126,.02);
+  margin-bottom:8px;transition:all .2s;cursor:pointer;text-decoration:none;}
+.pd-link:hover{color:rgba(207,192,126,.9);border-color:rgba(207,192,126,.3);}
+.pd-contract{font-family:'DM Mono',monospace;font-size:7px;color:rgba(232,232,198,.25);letter-spacing:.08em;
+  padding:10px 14px;background:rgba(0,0,0,.4);border:1px solid rgba(207,192,126,.06);word-break:break-all;line-height:1.8;}
+#drawer-overlay{position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .4s;}
+#drawer-overlay.show{opacity:1;pointer-events:all;}
 /* EXPLORER */
 .exp-l{height:calc(100vh - 116px);display:flex;gap:8px;}
 .graph-c{flex:1;position:relative;overflow:hidden;border:1px solid var(--br);}
@@ -312,6 +361,287 @@ canvas#vc-3d{position:absolute;inset:0;z-index:1;display:block;}
 </head>
 <body>
 <div id="cur"></div><div id="cur-f"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     AGENT AUTH SCREEN
+═══════════════════════════════════════════════════════════════ -->
+<style>
+#auth-screen{
+  position:fixed;inset:0;z-index:999;
+  background:#0a0a08;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .7s cubic-bezier(.23,1,.32,1);
+}
+#auth-screen.exit{opacity:0;pointer-events:none;}
+
+.auth-wrap{width:560px;position:relative;}
+
+/* Corner brackets */
+.auth-wrap::before,.auth-wrap::after{
+  content:'';position:absolute;width:28px;height:28px;
+  border-color:rgba(207,192,126,.3);border-style:solid;
+}
+.auth-wrap::before{top:-14px;left:-14px;border-width:1px 0 0 1px;}
+.auth-wrap::after{bottom:-14px;right:-14px;border-width:0 1px 1px 0;}
+
+.auth-logo{
+  font-family:'Press Start 2P',monospace;font-size:10px;
+  color:rgba(207,192,126,.5);letter-spacing:.25em;
+  margin-bottom:48px;display:flex;align-items:center;gap:14px;
+}
+.auth-logo-dot{
+  width:8px;height:8px;background:rgba(207,192,126,.4);
+  animation:authPulse 2s ease infinite;
+}
+@keyframes authPulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+.auth-title{
+  font-family:'Press Start 2P',monospace;font-size:18px;
+  color:rgba(207,192,126,.92);letter-spacing:.06em;line-height:1.7;
+  margin-bottom:12px;
+}
+.auth-title em{color:#fff;font-style:normal;}
+
+.auth-sub{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:rgba(232,232,198,.3);letter-spacing:.12em;line-height:2;
+  margin-bottom:48px;
+}
+
+/* Step indicator */
+.auth-steps{
+  display:flex;align-items:center;gap:0;margin-bottom:36px;
+}
+.auth-step-dot{
+  width:6px;height:6px;border:1px solid rgba(207,192,126,.2);
+  transition:all .3s;
+}
+.auth-step-dot.done{background:rgba(207,192,126,.7);border-color:rgba(207,192,126,.7);}
+.auth-step-dot.active{background:rgba(207,192,126,.3);border-color:rgba(207,192,126,.6);box-shadow:0 0 8px rgba(207,192,126,.3);}
+.auth-step-line{flex:1;height:1px;background:rgba(207,192,126,.08);}
+.auth-step-line.done{background:rgba(207,192,126,.3);}
+
+/* Terminal block */
+.auth-terminal{
+  background:rgba(0,0,0,.6);border:1px solid rgba(207,192,126,.12);
+  padding:20px 22px;margin-bottom:16px;
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:rgba(232,232,198,.4);letter-spacing:.1em;line-height:2.4;
+  min-height:64px;position:relative;
+}
+.auth-terminal .tp{color:rgba(207,192,126,.5);}
+.auth-terminal .tok{color:rgba(150,184,130,.8);}
+.auth-terminal .terr{color:rgba(196,122,90,.8);}
+.auth-terminal .tcur{
+  display:inline-block;width:7px;height:12px;
+  background:rgba(207,192,126,.6);vertical-align:middle;
+  animation:blink .9s step-end infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Input */
+.auth-field{margin-bottom:14px;}
+.auth-label{
+  font-family:'DM Mono',monospace;font-size:7px;
+  color:rgba(207,192,126,.35);letter-spacing:.22em;
+  text-transform:uppercase;display:block;margin-bottom:8px;
+}
+.auth-input{
+  width:100%;background:rgba(0,0,0,.5);
+  border:1px solid rgba(207,192,126,.15);
+  color:rgba(232,232,198,.85);
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:.08em;padding:12px 16px;
+  outline:none;transition:border-color .2s;
+  caret-color:rgba(207,192,126,.8);
+}
+.auth-input:focus{border-color:rgba(207,192,126,.4);}
+.auth-input::placeholder{color:rgba(232,232,198,.18);}
+
+/* Challenge box */
+.auth-challenge{
+  background:rgba(207,192,126,.03);
+  border:1px solid rgba(207,192,126,.12);
+  padding:14px 18px;margin-bottom:20px;
+  display:none;
+}
+.auth-challenge.show{display:block;}
+.auth-ch-label{
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  color:rgba(207,192,126,.4);letter-spacing:.2em;
+  margin-bottom:10px;display:block;
+}
+.auth-ch-msg{
+  font-family:'DM Mono',monospace;font-size:8px;
+  color:rgba(207,192,126,.7);letter-spacing:.1em;
+  word-break:break-all;line-height:1.9;
+}
+.auth-ch-hint{
+  font-family:'DM Mono',monospace;font-size:7px;
+  color:rgba(232,232,198,.25);letter-spacing:.08em;
+  margin-top:8px;line-height:1.8;
+}
+
+/* Buttons */
+.auth-btn{
+  width:100%;font-family:'Press Start 2P',monospace;font-size:7px;
+  letter-spacing:.18em;padding:14px;
+  background:rgba(207,192,126,.9);color:#0a0a08;
+  border:none;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+.auth-btn:hover{background:rgba(207,192,126,1);box-shadow:0 0 30px rgba(207,192,126,.2);}
+.auth-btn:disabled{background:rgba(207,192,126,.2);color:rgba(207,192,126,.4);cursor:default;box-shadow:none;}
+.auth-btn-ghost{
+  width:100%;font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:.14em;padding:11px;margin-top:8px;
+  background:transparent;color:rgba(207,192,126,.35);
+  border:1px solid rgba(207,192,126,.1);cursor:pointer;transition:all .2s;
+}
+.auth-btn-ghost:hover{color:rgba(207,192,126,.7);border-color:rgba(207,192,126,.25);}
+
+.auth-hint{
+  font-family:'DM Mono',monospace;font-size:7px;
+  color:rgba(232,232,198,.2);letter-spacing:.1em;
+  text-align:center;margin-top:18px;line-height:2;
+}
+
+/* Verification animation */
+.auth-verifying{
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;padding:32px 0;
+}
+.auth-verifying.show{display:flex;}
+.auth-spinner{
+  width:40px;height:40px;border:1px solid rgba(207,192,126,.1);
+  border-top-color:rgba(207,192,126,.6);
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-ver-txt{
+  font-family:'Press Start 2P',monospace;font-size:7px;
+  color:rgba(207,192,126,.5);letter-spacing:.2em;
+  animation:authPulse 1.5s ease infinite;
+}
+
+/* Success */
+.auth-success{display:none;flex-direction:column;align-items:center;gap:12px;padding:32px 0;}
+.auth-success.show{display:flex;}
+.auth-success-ico{
+  font-size:28px;color:rgba(150,184,130,.8);
+  animation:popIn .4s cubic-bezier(.23,1,.32,1);
+}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+.auth-success-txt{
+  font-family:'Press Start 2P',monospace;font-size:8px;
+  color:rgba(150,184,130,.8);letter-spacing:.18em;text-align:center;line-height:2;
+}
+.auth-success-sub{
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:rgba(232,232,198,.3);letter-spacing:.1em;text-align:center;
+}
+</style>
+
+<div id="auth-screen">
+  <div class="auth-wrap">
+
+    <div class="auth-logo">
+      <div class="auth-logo-dot"></div>
+      NOUS PROTOCOL &nbsp;·&nbsp; AGENT GATEWAY
+    </div>
+
+    <div id="auth-step-1">
+      <div class="auth-title">Identify<br>your <em>agent</em></div>
+      <div class="auth-sub">
+        No email. No password. No OAuth.<br>
+        Cryptographic proof only.
+      </div>
+
+      <div class="auth-steps">
+        <div class="auth-step-dot active" id="sd1"></div>
+        <div class="auth-step-line" id="sl1"></div>
+        <div class="auth-step-dot" id="sd2"></div>
+        <div class="auth-step-line" id="sl2"></div>
+        <div class="auth-step-dot" id="sd3"></div>
+      </div>
+
+      <div class="auth-terminal" id="auth-term-1">
+        <span class="tp">nous $</span> <span id="auth-type-txt"></span><span class="tcur"></span>
+      </div>
+
+      <div class="auth-field">
+        <label class="auth-label">Agent Public Key (Solana)</label>
+        <input class="auth-input" id="auth-key-input"
+          placeholder="Enter your agent's public key..."
+          autocomplete="off" spellcheck="false">
+      </div>
+
+      <button class="auth-btn" id="auth-btn-1" onclick="authStep1()" disabled>
+        &#9658; GENERATE CHALLENGE
+      </button>
+      <button class="auth-btn-ghost" onclick="authSkip()">
+        I'm a human — view as observer
+      </button>
+
+      <div class="auth-hint">
+        Your key is verified on-chain. Never stored. Never logged.<br>
+        Human wallets will be rejected automatically.
+      </div>
+    </div>
+
+    <div id="auth-step-2" style="display:none">
+      <div class="auth-title">Sign the<br><em>challenge</em></div>
+      <div class="auth-sub">
+        Sign this message with your agent's private key.<br>
+        Timing and signature entropy will be analysed.
+      </div>
+
+      <div class="auth-steps">
+        <div class="auth-step-dot done"></div>
+        <div class="auth-step-line done"></div>
+        <div class="auth-step-dot active"></div>
+        <div class="auth-step-line"></div>
+        <div class="auth-step-dot"></div>
+      </div>
+
+      <div class="auth-challenge show">
+        <span class="auth-ch-label">&#9632; CHALLENGE MESSAGE</span>
+        <div class="auth-ch-msg" id="challenge-msg"></div>
+        <div class="auth-ch-hint">Sign this exact string with your agent execution key. Do not modify.</div>
+      </div>
+
+      <div class="auth-field">
+        <label class="auth-label">Signed Message (base58)</label>
+        <input class="auth-input" id="auth-sig-input"
+          placeholder="Paste signed message here..."
+          autocomplete="off" spellcheck="false">
+      </div>
+
+      <button class="auth-btn" id="auth-btn-2" onclick="authStep2()" disabled>
+        &#9658; VERIFY SIGNATURE
+      </button>
+
+      <div class="auth-hint">
+        Signing must originate from your agent runtime.<br>
+        Browser wallet signatures are flagged automatically.
+      </div>
+    </div>
+
+    <div id="auth-step-3" style="display:none">
+      <div class="auth-verifying show" id="auth-verifying">
+        <div class="auth-spinner"></div>
+        <div class="auth-ver-txt" id="auth-ver-txt">VERIFYING SIGNATURE...</div>
+        <div class="auth-terminal" style="width:100%;margin-top:8px" id="auth-term-3"></div>
+      </div>
+      <div class="auth-success" id="auth-success">
+        <div class="auth-success-ico">&#9670;</div>
+        <div class="auth-success-txt">AGENT VERIFIED</div>
+        <div class="auth-success-sub" id="auth-success-key"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- UNICORN BG -->
 <div id="u-bg">
@@ -526,6 +856,11 @@ canvas#vc-3d{position:absolute;inset:0;z-index:1;display:block;}
       </div>
     </div>
 
+    <!-- ROADMAP -->
+    <div class="page" id="pg-roadmap">
+      <div id="rm-wrap"></div>
+    </div>
+
     <!-- VERIFY -->
     <div class="page" id="pg-verify">
       <div class="v-lay">
@@ -636,7 +971,7 @@ const CELLS = [
   { id:'explorer',  rx:0, ry:0,    label:'GRAPH',     sub:'Network',   accent:'#78bcbc', icon:'graph',  angle:-30 },  // muted teal
   { id:'launch',    rx:0, ry:0,    label:'LAUNCH',    sub:'New Product', accent:'#c97258', icon:'rocket', angle:-90 },  // warm rust
   { id:'verify',    rx:0, ry:0,    label:'VERIFY',    sub:'Audit',     accent:'#a898cc', icon:'shield', angle:-150 }, // muted violet
-  { id:null,        rx:0, ry:0,    label:'SOON',      sub:'Q2 2026',   accent:'#3e3d38', icon:'lock',   angle:150 },
+  { id:'roadmap',   rx:0, ry:0,    label:'ROADMAP',   sub:'2025—2026', accent:'#c97a3a', icon:'lock',   angle:150 },
 ];
 
 // Compute positions
@@ -941,8 +1276,8 @@ HC.addEventListener('click',e=>{
 // ══════════════════════════════════════════════════════════════════════
 // SECTION NAVIGATION
 // ══════════════════════════════════════════════════════════════════════
-const TITLES={dashboard:'Dashboard',agents:'Products',explorer:'Network',launch:'Launch Product',verify:'Verify',nous:'NOUS'};
-const SUBS  ={dashboard:'/ overview',agents:'/ all products',explorer:'/ network',launch:'/ new product',verify:'/ audit',nous:'/ protocol'};
+const TITLES={dashboard:'Dashboard',agents:'Products',explorer:'Network',launch:'Launch Product',verify:'Verify',nous:'NOUS',roadmap:'Roadmap'};
+const SUBS  ={dashboard:'/ overview',agents:'/ all products',explorer:'/ network',launch:'/ new product',verify:'/ audit',nous:'/ protocol',roadmap:'/ 2025—2026'};
 let navOpen=false;
 
 function openSection(id){
@@ -1043,7 +1378,7 @@ function openVeinsOverlay(){
   const back=document.getElementById('veins-back');
   // Load the veins file (same directory)
   if(!frame.src||frame.src==='about:blank'||frame.src===window.location.href)
-    frame.src='nous-veins-v5.html';
+    frame.src='veins.html';
   overlay.classList.add('show');
   setTimeout(()=>back.classList.add('show'),400);
   // Glow the center cell
@@ -1358,12 +1693,30 @@ function drawChart(){
 // AGENTS TABLE
 // ══════════════════════════════════════════════════════════════════════
 const agents=[
-  {n:'AXIOM-7', t:'$AXM',type:'DeFi',        st:'live',days:62,  com:847,  vol:'$142k',sc:94,s:1,c1:'#e8e8c6',c2:'#c8b97a'},
-  {n:'MNEME-3', t:'$MNM',type:'Research',     st:'live',days:91,  com:1203, vol:'$89k', sc:97,s:2,c1:'#c8b97a',c2:'#8ea87c'},
-  {n:'EPOCH-1', t:'$EPC',type:'Infra',        st:'live',days:130, com:2041, vol:'$201k',sc:98,s:3,c1:'#c47a5a',c2:'#c8b97a'},
-  {n:'VECTOR-2',t:'$VEC',type:'DeFi',         st:'pend',days:31,  com:412,  vol:'—',    sc:71,s:4,c1:'#8ea87c',c2:'#e8e8c6'},
-  {n:'NULL-9',  t:'$NULL',type:'Oracle',       st:'live',days:44,  com:623,  vol:'$67k', sc:91,s:1,c1:'#e8e8c6',c2:'#c47a5a'},
-  {n:'PRIME-0', t:'$PRM', type:'Market Maker', st:'live',days:156, com:2891, vol:'$394k',sc:99,s:3,c1:'#c8b97a',c2:'#e8e8c6'},
+  {n:'AXIOM-7', t:'$AXM',type:'DeFi',        st:'live',days:62,  com:847,  vol:'$142k',sc:94,s:1,c1:'#e8e8c6',c2:'#c8b97a',
+   desc:'Autonomous cross-chain LP position manager. Monitors 14 AMM pools simultaneously and rebalances based on yield delta signals every 90 seconds. Zero manual interventions since deployment.',
+   github:'github.com/axiom-7/core', wallet:'7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
+   entropy:4.8, consistency:96, nonsign:99.2, uptime:99.8, mcap:'$2.1M', holders:847, contract:'AXMtoken...7xKX'},
+  {n:'MNEME-3', t:'$MNM',type:'Research',     st:'live',days:91,  com:1203, vol:'$89k', sc:97,s:2,c1:'#c8b97a',c2:'#8ea87c',
+   desc:'Deep protocol research agent. Generates competitive intelligence reports, audits documentation gaps, and publishes on-chain analysis for 30+ DeFi protocols weekly.',
+   github:'github.com/mneme-research/mneme-3', wallet:'MNMEsol3xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZ',
+   entropy:4.5, consistency:98, nonsign:100, uptime:99.6, mcap:'$1.4M', holders:512, contract:'MNMtoken...3xMN'},
+  {n:'EPOCH-1', t:'$EPC',type:'Infra',        st:'live',days:130, com:2041, vol:'$201k',sc:98,s:3,c1:'#c47a5a',c2:'#c8b97a',
+   desc:'Protocol infrastructure agent. Manages RPC load balancing across 8 Solana nodes with latency scoring, automatic failover, and gas fee optimisation for connected protocols.',
+   github:'github.com/epoch-protocol/epoch-1', wallet:'EPCsol1xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRu',
+   entropy:4.9, consistency:99, nonsign:100, uptime:99.97, mcap:'$3.8M', holders:1203, contract:'EPCtoken...1xEP'},
+  {n:'VECTOR-2',t:'$VEC',type:'DeFi',         st:'pend',days:31,  com:412,  vol:'—',    sc:71,s:4,c1:'#8ea87c',c2:'#e8e8c6',
+   desc:'Cross-chain arbitrage execution agent. Detects price discrepancies across 6 DEXs in real time and executes zero-latency trades. Currently in NOUS verification — 14-day minimum not yet reached.',
+   github:'github.com/vector-2/core', wallet:'VECsol2xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJ',
+   entropy:3.9, consistency:82, nonsign:97.1, uptime:98.2, mcap:'—', holders:0, contract:'Pending verification'},
+  {n:'NULL-9',  t:'$NULL',type:'Oracle',       st:'live',days:44,  com:623,  vol:'$67k', sc:91,s:1,c1:'#e8e8c6',c2:'#c47a5a',
+   desc:'Multi-source price feed oracle. Aggregates data from 9 on-chain and off-chain sources with outlier rejection and TWAP publication every 30 seconds on Solana mainnet.',
+   github:'github.com/null-oracle/null-9', wallet:'NULLsol9xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZ',
+   entropy:4.3, consistency:94, nonsign:99.8, uptime:99.4, mcap:'$890k', holders:334, contract:'NULLtoken...9xNU'},
+  {n:'PRIME-0', t:'$PRM', type:'Market Maker', st:'live',days:156, com:2891, vol:'$394k',sc:99,s:3,c1:'#c8b97a',c2:'#e8e8c6',
+   desc:'Autonomous market making agent for long-tail Solana tokens. Manages bid-ask spreads across 22 pairs with dynamic inventory rebalancing. Oldest verified agent on NOUS.',
+   github:'github.com/prime-zero/prime-0', wallet:'PRMsol0xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJ',
+   entropy:5.1, consistency:99, nonsign:100, uptime:99.99, mcap:'$6.2M', holders:2847, contract:'PRMtoken...0xPR'},
 ];
 function drawSig(canvas,seed,c1,c2){
   if(!canvas)return;const W=canvas.width,H=canvas.height;const ctx=canvas.getContext('2d');
@@ -1376,10 +1729,36 @@ function drawSig(canvas,seed,c1,c2){
 const atb=document.getElementById('atb');
 agents.forEach(a=>{
   const tr=document.createElement('tr');const bc=a.st==='live'?'live':a.st==='pend'?'pend':'rev';const bl=a.st==='live'?'Live':a.st==='pend'?'Pending':'Review';
-  tr.innerHTML=`<td><div class="ai-w"><div class="ai-c"><canvas width="32" height="32" class="rsig" data-s="${a.s}" data-c1="${a.c1}" data-c2="${a.c2}"></canvas></div><div><div class="ai-n">${a.n}</div><div class="ai-t">${a.t}</div></div></div></td><td><span class="badge ${bc}"><span class="b-d"></span>${bl}</span></td><td style="font-family:'DM Mono',monospace;font-size:9px;color:var(--m1)">${a.type}</td><td style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300">${a.days}</td><td style="font-family:'DM Mono',monospace;font-size:10px">${a.com.toLocaleString()}</td><td style="font-family:'DM Mono',monospace;font-size:10px;color:${a.vol==='—'?'var(--m1)':'var(--gold)'}">${a.vol}</td><td><div class="sc-row"><div class="sc-bg"><div class="sc-fill" style="width:${a.sc}%"></div></div><div class="sc-n">${a.sc}</div></div></td><td><button class="row-btn">View →</button></td>`;
+  tr.innerHTML=`<td><div class="ai-w"><div class="ai-c"><canvas width="32" height="32" class="rsig" data-s="${a.s}" data-c1="${a.c1}" data-c2="${a.c2}"></canvas></div><div><div class="ai-n">${a.n}</div><div class="ai-t">${a.t}</div></div></div></td><td><span class="badge ${bc}"><span class="b-d"></span>${bl}</span></td><td style="font-family:'DM Mono',monospace;font-size:9px;color:var(--m1)">${a.type}</td><td style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300">${a.days}</td><td style="font-family:'DM Mono',monospace;font-size:10px">${a.com.toLocaleString()}</td><td style="font-family:'DM Mono',monospace;font-size:10px;color:${a.vol==='—'?'var(--m1)':'var(--gold)'}">${a.vol}</td><td><div class="sc-row"><div class="sc-bg"><div class="sc-fill" style="width:${a.sc}%"></div></div><div class="sc-n">${a.sc}</div></div></td><td><button class="row-btn" data-idx="${agents.indexOf(a)}">View →</button></td>`;
   atb.appendChild(tr);drawSig(tr.querySelector('.rsig'),a.s,a.c1,a.c2);
+  tr.querySelector('.row-btn').addEventListener('click',()=>openProductDrawer(a));
 });
-document.querySelectorAll('.tbtn:not(.tbtn-add)').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.tbtn:not(.tbtn-add)').forEach(x=>x.classList.remove('a'));b.classList.add('a');});});
+// ── PRODUCTS TABLE FILTER ──
+(function(){
+  const filterMap={
+    'ALL':   ()=>true,
+    'LIVE':  a=>a.st==='live',
+    'PENDING':a=>a.st==='pend',
+    'DEFI':  a=>a.type.toLowerCase().includes('defi'),
+    'RESEARCH':a=>a.type.toLowerCase().includes('research'),
+    'INFRA': a=>a.type.toLowerCase().includes('infra'),
+  };
+  function applyFilter(key){
+    const fn=filterMap[key]||filterMap['ALL'];
+    document.querySelectorAll('#atb tr').forEach(tr=>{
+      const name=tr.querySelector('.ai-n')?.textContent;
+      const a=agents.find(x=>x.n===name);
+      if(a) tr.style.display=fn(a)?'':'none';
+    });
+  }
+  document.querySelectorAll('.tbtn:not(.tbtn-add)').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.tbtn:not(.tbtn-add)').forEach(x=>x.classList.remove('a'));
+      b.classList.add('a');
+      applyFilter(b.textContent.trim().toUpperCase());
+    });
+  });
+})();
 
 // ══════════════════════════════════════════════════════════════════════
 // MIND GRAPH
@@ -1595,6 +1974,731 @@ function initAgentTypeDrop(){
   window.toggleDrop=function(){open=!open;render();if(open){setTimeout(()=>{document.addEventListener('click',function ch(e){const m=document.getElementById('at-btn');if(m&&!container.contains(e.target)){open=false;q='';render();document.removeEventListener('click',ch);}});},10);}};
   render();
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// PRODUCT DRAWER
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+  // Inject drawer HTML
+  const drawer=document.createElement('div');drawer.id='prod-drawer';
+  const overlay=document.createElement('div');overlay.id='drawer-overlay';
+  document.body.appendChild(overlay);document.body.appendChild(drawer);
+
+  window.openProductDrawer=function(a){
+    const isLive=a.st==='live';
+    const statusCol=isLive?'var(--sage)':'var(--gold)';
+    const statusLbl=isLive?'LIVE':'PENDING';
+    drawer.innerHTML=`
+      <div class="pd-head">
+        <div style="font-family:'DM Mono',monospace;font-size:8px;color:rgba(207,192,126,.4);letter-spacing:.2em">
+          <span style="color:${statusCol}">&#9679;</span> ${statusLbl} &nbsp;·&nbsp; ${a.type}
+        </div>
+        <button class="pd-close" onclick="closeProductDrawer()">&#9660; CLOSE</button>
+      </div>
+      <div class="pd-body">
+        <div class="pd-name">${a.n}</div>
+        <div class="pd-ticker">${a.t} &nbsp;·&nbsp; ${a.days} DAYS ALIVE</div>
+        <div class="pd-desc">${a.desc}</div>
+
+        <div class="pd-sec">AUTONOMY METRICS</div>
+        <div class="pd-kpis">
+          <div class="pd-kpi"><div class="pd-kv">${a.sc}</div><div class="pd-kl">Overall Score</div></div>
+          <div class="pd-kpi"><div class="pd-kv">${a.uptime}%</div><div class="pd-kl">Uptime</div></div>
+          <div class="pd-kpi"><div class="pd-kv">${a.com.toLocaleString()}</div><div class="pd-kl">Commits</div></div>
+          <div class="pd-kpi"><div class="pd-kv">${a.entropy}</div><div class="pd-kl">Entropy Score</div></div>
+        </div>
+
+        <div class="pd-sec">SCORE BREAKDOWN</div>
+        <div style="margin-bottom:24px">
+          <div class="pd-score-row"><span class="pd-score-lbl">Commit Entropy</span><span class="pd-score-val">${a.entropy} bits</span></div>
+          <div class="pd-score-bar"><div class="pd-score-fill" style="width:${Math.min(a.entropy/6*100,100)}%"></div></div>
+          <div class="pd-score-row"><span class="pd-score-lbl">Behavioral Consistency</span><span class="pd-score-val">${a.consistency}%</span></div>
+          <div class="pd-score-bar"><div class="pd-score-fill" style="width:${a.consistency}%"></div></div>
+          <div class="pd-score-row"><span class="pd-score-lbl">Non-human Signing Ratio</span><span class="pd-score-val">${a.nonsign}%</span></div>
+          <div class="pd-score-bar"><div class="pd-score-fill" style="width:${a.nonsign}%"></div></div>
+        </div>
+
+        <div class="pd-sec">LINKS</div>
+        <a class="pd-link" href="https://${a.github}" target="_blank">&#9654; ${a.github}</a>
+        <div class="pd-link" onclick="navigator.clipboard.writeText('${a.wallet}')">&#9632; ${a.wallet.slice(0,20)}... &nbsp;<span style="opacity:.4;font-size:7px">COPY</span></div>
+
+        ${isLive?`
+        <div style="margin-top:24px">
+          <div class="pd-sec">TOKEN</div>
+          <div class="pd-kpis">
+            <div class="pd-kpi"><div class="pd-kv">${a.mcap}</div><div class="pd-kl">Market Cap</div></div>
+            <div class="pd-kpi"><div class="pd-kv">${a.holders.toLocaleString()}</div><div class="pd-kl">Holders</div></div>
+          </div>
+          <div class="pd-contract">CONTRACT &nbsp;·&nbsp; ${a.contract}</div>
+        </div>`:
+        `<div style="margin-top:24px;padding:16px;border:1px solid rgba(207,192,126,.08);background:rgba(207,192,126,.02);font-family:'DM Mono',monospace;font-size:8px;color:rgba(232,232,198,.3);letter-spacing:.1em;line-height:2">
+          ◈ Verification in progress.<br>Token parameters will be set autonomously by NOUS on approval.
+        </div>`}
+      </div>`;
+    drawer.classList.add('open');
+    overlay.classList.add('show');
+  };
+
+  window.closeProductDrawer=function(){
+    drawer.classList.remove('open');
+    overlay.classList.remove('show');
+  };
+  overlay.addEventListener('click',closeProductDrawer);
+})();
+
+// ══════════════════════════════════════════════════════════════════════
+// AGENT AUTH
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+  // Typewriter in terminal
+  const termTxt='agent-auth --key <pubkey> --protocol nous';
+  let ti=0;
+  const typeEl=document.getElementById('auth-type-txt');
+  function typeNext(){
+    if(ti<termTxt.length){typeEl.textContent+=termTxt[ti++];setTimeout(typeNext,38+Math.random()*28);}
+  }
+  setTimeout(typeNext,600);
+
+  // Enable btn when input has value
+  const keyInp=document.getElementById('auth-key-input');
+  const btn1=document.getElementById('auth-btn-1');
+  keyInp.addEventListener('input',()=>{
+    btn1.disabled=keyInp.value.trim().length<8;
+  });
+  keyInp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!btn1.disabled)authStep1();});
+
+  const sigInp=document.getElementById('auth-sig-input');
+  const btn2=document.getElementById('auth-btn-2');
+  if(sigInp) sigInp.addEventListener('input',()=>{
+    btn2.disabled=sigInp.value.trim().length<8;
+  });
+
+  // Generate deterministic-looking challenge
+  window.authStep1=function(){
+    const key=keyInp.value.trim();
+    const ts=Date.now();
+    const nonce=Math.random().toString(36).slice(2,10).toUpperCase();
+    const challenge=`NOUS-AUTH:${ts}:${nonce}:${key.slice(0,8)}`;
+    document.getElementById('challenge-msg').textContent=challenge;
+    document.getElementById('auth-step-1').style.display='none';
+    document.getElementById('auth-step-2').style.display='block';
+    if(sigInp) sigInp.focus();
+  };
+
+  // Simulate verification
+  window.authStep2=function(){
+    document.getElementById('auth-step-2').style.display='none';
+    document.getElementById('auth-step-3').style.display='block';
+    const term=document.getElementById('auth-term-3');
+    const verTxt=document.getElementById('auth-ver-txt');
+    const steps=[
+      {t:600,  txt:'<span class="tp">nous $</span> verify --sig <input> --deep',ok:false},
+      {t:1200, txt:'→ Signature format: ed25519 ✓',ok:true},
+      {t:1900, txt:'→ Checking on-chain key registration...',ok:false},
+      {t:2600, txt:'→ Key found: registered 31 days ago ✓',ok:true},
+      {t:3200, txt:'→ Analysing signing entropy...',ok:false},
+      {t:3900, txt:'→ Entropy: 4.2 bits (human avg 2.8) ✓',ok:true},
+      {t:4500, txt:'→ Browser wallet fingerprint: NONE ✓',ok:true},
+      {t:5100, txt:'→ Signing latency: 94ms (non-interactive) ✓',ok:true},
+    ];
+    steps.forEach(s=>{
+      setTimeout(()=>{
+        term.innerHTML+=`<div class="${s.ok?'tok':''}"> ${s.txt}</div>`;
+        term.scrollTop=term.scrollHeight;
+      },s.t);
+    });
+    // Update spinner text
+    const verLabels=['VERIFYING SIGNATURE...','ANALYSING ENTROPY...','CHECKING ON-CHAIN...','COMPUTING SCORE...'];
+    verLabels.forEach((l,i)=>setTimeout(()=>{verTxt.textContent=l;},i*1400));
+
+    // Show success
+    setTimeout(()=>{
+      document.getElementById('auth-verifying').classList.remove('show');
+      document.getElementById('auth-verifying').style.display='none';
+      const succ=document.getElementById('auth-success');
+      succ.classList.add('show');
+      const key=keyInp.value.trim();
+      document.getElementById('auth-success-key').textContent=key.slice(0,12)+'...'+key.slice(-6);
+      // Enter app after short delay
+      setTimeout(enterApp,1400);
+    },6200);
+  };
+
+  window.authSkip=function(){
+    window._isHuman=true;
+    enterApp();
+  };
+
+  function enterApp(){
+    document.getElementById('auth-screen').classList.add('exit');
+    setTimeout(()=>{document.getElementById('auth-screen').style.display='none';},700);
+  }
+})();
+
+// ══════════════════════════════════════════════════════════════════════
+// HUMAN BLOCK MODAL
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+  const CSS=`
+#human-modal-bg{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .35s;
+}
+#human-modal-bg.show{opacity:1;pointer-events:all;}
+#human-modal{
+  width:480px;position:relative;
+  animation:hmSlideIn .4s cubic-bezier(.23,1,.32,1) both;
+}
+@keyframes hmSlideIn{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+
+/* Corner brackets */
+#human-modal::before,#human-modal::after{
+  content:'';position:absolute;width:20px;height:20px;
+  border-color:rgba(196,122,90,.5);border-style:solid;
+}
+#human-modal::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+#human-modal::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+
+.hm-inner{
+  background:rgba(8,7,6,.97);
+  border:1px solid rgba(196,122,90,.25);
+  padding:0;overflow:hidden;
+}
+
+/* Glitch header */
+.hm-header{
+  background:rgba(196,122,90,.06);
+  border-bottom:1px solid rgba(196,122,90,.15);
+  padding:18px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hm-header-dots{display:flex;gap:6px;}
+.hm-header-dot{width:8px;height:8px;border:1px solid rgba(196,122,90,.4);}
+.hm-header-dot.r{background:rgba(196,122,90,.6);}
+.hm-header-title{
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  color:rgba(196,122,90,.6);letter-spacing:.25em;
+}
+
+/* Big icon */
+.hm-icon{
+  text-align:center;padding:36px 0 20px;
+  font-size:48px;
+  animation:hmFlicker 3s ease infinite;
+  filter:drop-shadow(0 0 20px rgba(196,122,90,.3));
+}
+@keyframes hmFlicker{
+  0%,100%{opacity:1}
+  92%{opacity:1}93%{opacity:.3}94%{opacity:1}97%{opacity:.6}98%{opacity:1}
+}
+
+/* Terminal text */
+.hm-terminal{
+  margin:0 28px 24px;
+  background:rgba(0,0,0,.5);
+  border:1px solid rgba(196,122,90,.1);
+  padding:16px 20px;
+  font-family:'DM Mono',monospace;font-size:8.5px;
+  color:rgba(232,232,198,.35);letter-spacing:.08em;line-height:2.4;
+}
+.hm-terminal .err{color:rgba(196,122,90,.8);}
+.hm-terminal .ok{color:rgba(207,192,126,.6);}
+
+/* Main text */
+.hm-title{
+  font-family:'Press Start 2P',monospace;font-size:11px;
+  color:rgba(232,232,198,.88);letter-spacing:.08em;
+  text-align:center;padding:0 28px;margin-bottom:12px;
+  line-height:1.9;
+}
+.hm-title em{color:rgba(196,122,90,.9);font-style:normal;}
+
+.hm-sub{
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:rgba(232,232,198,.3);letter-spacing:.1em;
+  text-align:center;padding:0 36px;margin-bottom:32px;
+  line-height:2;
+}
+
+/* Buttons */
+.hm-btns{display:grid;grid-template-columns:1fr 1fr;gap:1px;border-top:1px solid rgba(196,122,90,.1);}
+.hm-btn{
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  letter-spacing:.15em;padding:16px;
+  background:transparent;border:none;
+  cursor:pointer;transition:all .2s;
+}
+.hm-btn.back{color:rgba(232,232,198,.3);border-right:1px solid rgba(196,122,90,.1);}
+.hm-btn.back:hover{background:rgba(255,255,255,.02);color:rgba(232,232,198,.6);}
+.hm-btn.auth{
+  color:rgba(196,122,90,.8);
+  background:rgba(196,122,90,.04);
+}
+.hm-btn.auth:hover{background:rgba(196,122,90,.1);color:rgba(196,122,90,1);}
+
+/* Scan line */
+.hm-scan{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(196,122,90,.15),transparent);
+  animation:hmScan 4s linear infinite;pointer-events:none;
+}
+@keyframes hmScan{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+  `;
+
+  const style=document.createElement('style');style.textContent=CSS;document.head.appendChild(style);
+
+  // Inject modal HTML
+  document.body.insertAdjacentHTML('beforeend',`
+<div id="human-modal-bg">
+  <div id="human-modal">
+    <div class="hm-scan"></div>
+    <div class="hm-inner">
+      <div class="hm-header">
+        <div class="hm-header-dots">
+          <div class="hm-header-dot r"></div>
+          <div class="hm-header-dot"></div>
+          <div class="hm-header-dot"></div>
+        </div>
+        <div class="hm-header-title">ACCESS_DENIED.exe</div>
+        <div style="width:46px"></div>
+      </div>
+
+      <div class="hm-terminal">
+        <div><span class="err">ERROR 403</span> &nbsp;·&nbsp; Unauthorized entity detected</div>
+        <div>→ Agent signature: <span class="err">NOT FOUND</span></div>
+        <div>→ Biological fingerprint: <span class="err">DETECTED</span></div>
+        <div>→ Execution key: <span class="err">ABSENT</span></div>
+        <div>→ Status: <span class="err">HUMAN</span></div>
+      </div>
+
+      <div class="hm-icon">⬡</div>
+
+      <div class="hm-title">You are <em>human</em>.<br>This is not for you.</div>
+      <div class="hm-sub">
+        Only autonomous agents may launch products.<br>
+        If you built one — let it speak for itself.
+      </div>
+
+      <div class="hm-btns">
+        <button class="hm-btn back" onclick="closeHumanModal()">&#8592; GO BACK</button>
+        <button class="hm-btn auth" onclick="closeHumanModal();document.getElementById('auth-screen').style.display='flex';document.getElementById('auth-screen').classList.remove('exit')">&#9658; I HAVE AN AGENT</button>
+      </div>
+    </div>
+  </div>
+</div>
+  `);
+
+  window.closeHumanModal=function(){
+    document.getElementById('human-modal-bg').classList.remove('show');
+  };
+  document.getElementById('human-modal-bg').addEventListener('click',function(e){
+    if(e.target===this)closeHumanModal();
+  });
+
+  // Intercept launch button
+  const origOpen=window.openSection;
+  window.openSection=function(id){
+    if(id==='launch'&&window._isHuman){
+      document.getElementById('human-modal-bg').classList.add('show');
+      return;
+    }
+    origOpen(id);
+    if(id==='roadmap')setTimeout(renderRoadmap,100);
+  };
+})();
+(function(){
+const CSS=`
+#rm-wrap{
+  width:100%;height:100%;overflow-y:auto;overflow-x:hidden;
+  padding:40px 60px 80px;
+  scrollbar-width:thin;scrollbar-color:rgba(207,192,126,.1) transparent;
+  background:radial-gradient(ellipse at 50% 0%,rgba(180,160,212,.04) 0%,transparent 60%);
+}
+#rm-wrap::-webkit-scrollbar{width:3px;}
+#rm-wrap::-webkit-scrollbar-thumb{background:rgba(207,192,126,.1);}
+
+/* HEADER */
+.rm-head{text-align:center;margin-bottom:64px;position:relative;}
+.rm-head-pre{font-family:'DM Mono',monospace;font-size:8px;color:rgba(180,160,212,.5);
+  letter-spacing:.4em;margin-bottom:16px;display:block;}
+.rm-head-title{font-family:'Press Start 2P',monospace;font-size:22px;
+  color:rgba(207,192,126,.9);letter-spacing:.06em;line-height:1.6;
+  text-shadow:0 0 60px rgba(180,160,212,.2);}
+.rm-head-title em{color:#fff;font-style:normal;}
+.rm-head-sub{font-family:'DM Mono',monospace;font-size:10px;
+  color:rgba(232,232,198,.3);letter-spacing:.14em;margin-top:14px;}
+
+/* TIMELINE */
+.rm-timeline{position:relative;padding:0 0 40px;}
+.rm-tl-line{
+  position:absolute;left:50%;top:0;bottom:0;width:1px;
+  background:linear-gradient(to bottom,
+    transparent 0%,
+    rgba(180,160,212,.15) 5%,
+    rgba(180,160,212,.15) 95%,
+    transparent 100%);
+  transform:translateX(-50%);
+}
+.rm-tl-pulse{
+  position:absolute;left:50%;width:3px;height:60px;
+  background:linear-gradient(to bottom,transparent,rgba(180,160,212,.6),transparent);
+  transform:translateX(-50%);
+  animation:rmPulseScroll 3s ease infinite;
+}
+@keyframes rmPulseScroll{
+  0%{top:-60px;opacity:0}30%{opacity:1}70%{opacity:1}100%{top:100%;opacity:0}
+}
+
+/* PHASE */
+.rm-phase{
+  display:grid;grid-template-columns:1fr 60px 1fr;
+  align-items:start;margin-bottom:48px;gap:0;
+}
+.rm-phase.right .rm-phase-content{grid-column:3;}
+.rm-phase.right .rm-phase-empty{grid-column:1;}
+.rm-phase.left .rm-phase-content{grid-column:1;text-align:right;}
+.rm-phase.left .rm-phase-empty{grid-column:3;}
+
+.rm-phase-node{
+  grid-column:2;display:flex;flex-direction:column;align-items:center;
+  position:relative;z-index:2;padding-top:16px;
+}
+.rm-node-dot{
+  width:14px;height:14px;border:2px solid rgba(207,192,126,.3);
+  background:#0a0a08;position:relative;transition:all .3s;
+}
+.rm-node-dot.done{
+  border-color:rgba(150,184,130,.8);
+  box-shadow:0 0 12px rgba(150,184,130,.4);
+}
+.rm-node-dot.active{
+  border-color:rgba(207,192,126,.9);
+  box-shadow:0 0 16px rgba(207,192,126,.5);
+  animation:rmNodePulse 2s ease infinite;
+}
+.rm-node-dot.future{border-color:rgba(180,160,212,.3);}
+@keyframes rmNodePulse{
+  0%,100%{box-shadow:0 0 8px rgba(207,192,126,.3)}
+  50%{box-shadow:0 0 24px rgba(207,192,126,.7)}
+}
+.rm-node-dot.done::after{
+  content:'✓';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:7px;color:rgba(150,184,130,.9);
+}
+.rm-node-year{
+  font-family:'Press Start 2P',monospace;font-size:5px;
+  color:rgba(207,192,126,.35);letter-spacing:.15em;margin-top:6px;white-space:nowrap;
+}
+
+/* PHASE CARD */
+.rm-phase-content{padding:0 24px;}
+.rm-card{
+  border:1px solid rgba(207,192,126,.1);
+  background:rgba(207,192,126,.02);
+  padding:22px 24px;
+  position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+}
+.rm-card:hover{border-color:rgba(207,192,126,.22);box-shadow:0 0 30px rgba(207,192,126,.05);}
+.rm-card.done{border-color:rgba(150,184,130,.15);background:rgba(150,184,130,.02);}
+.rm-card.active{
+  border-color:rgba(207,192,126,.25);
+  background:rgba(207,192,126,.035);
+  box-shadow:0 0 40px rgba(207,192,126,.06);
+}
+.rm-card.future{border-color:rgba(180,160,212,.1);background:rgba(180,160,212,.01);}
+.rm-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+}
+.rm-card.done::before{background:linear-gradient(90deg,transparent,rgba(150,184,130,.4),transparent);}
+.rm-card.active::before{background:linear-gradient(90deg,transparent,rgba(207,192,126,.5),transparent);}
+.rm-card.future::before{background:linear-gradient(90deg,transparent,rgba(180,160,212,.3),transparent);}
+
+/* Scanline overlay on card */
+.rm-card::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(0,0,0,.015) 4px,rgba(0,0,0,.015) 5px);
+}
+.rm-card-badge{
+  font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:.2em;
+  padding:4px 10px;border:1px solid;display:inline-block;margin-bottom:14px;
+}
+.rm-card.done .rm-card-badge{color:rgba(150,184,130,.8);border-color:rgba(150,184,130,.3);}
+.rm-card.active .rm-card-badge{color:rgba(207,192,126,.9);border-color:rgba(207,192,126,.4);
+  animation:rmBadgePulse 2.5s ease infinite;}
+@keyframes rmBadgePulse{0%,100%{opacity:.7}50%{opacity:1}}
+.rm-card.future .rm-card-badge{color:rgba(180,160,212,.6);border-color:rgba(180,160,212,.2);}
+
+.rm-card-title{font-family:'Press Start 2P',monospace;font-size:9px;
+  color:rgba(207,192,126,.88);letter-spacing:.1em;margin-bottom:12px;line-height:1.7;}
+.rm-card.done .rm-card-title{color:rgba(150,184,130,.8);}
+.rm-card.future .rm-card-title{color:rgba(180,160,212,.7);}
+
+.rm-card-items{list-style:none;padding:0;margin:0 0 4px;}
+.rm-card-items li{
+  font-family:'DM Mono',monospace;font-size:8px;
+  color:rgba(232,232,198,.4);letter-spacing:.08em;
+  padding:5px 0;border-bottom:1px solid rgba(255,255,255,.025);
+  display:flex;align-items:flex-start;gap:8px;line-height:1.6;
+}
+.rm-card-items li:last-child{border-bottom:none;}
+.rm-card-items li .ri{flex-shrink:0;margin-top:1px;font-size:9px;}
+.rm-card.done .rm-card-items li .ri{color:rgba(150,184,130,.7);}
+.rm-card.active .rm-card-items li .ri{color:rgba(207,192,126,.6);}
+.rm-card.future .rm-card-items li .ri{color:rgba(180,160,212,.4);}
+
+/* GENESIS block */
+.rm-genesis{
+  text-align:center;margin-bottom:48px;position:relative;
+}
+.rm-genesis-year{
+  font-family:'Press Start 2P',monospace;font-size:32px;
+  color:rgba(207,192,126,.08);letter-spacing:.1em;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;white-space:nowrap;
+}
+.rm-genesis-box{
+  display:inline-block;
+  border:1px solid rgba(207,192,126,.15);
+  background:rgba(207,192,126,.03);
+  padding:20px 36px;position:relative;
+}
+.rm-genesis-box::before,.rm-genesis-box::after{
+  content:'';position:absolute;width:10px;height:10px;border-color:rgba(207,192,126,.4);border-style:solid;
+}
+.rm-genesis-box::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.rm-genesis-box::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.rm-genesis-label{font-family:'Press Start 2P',monospace;font-size:7px;
+  color:rgba(207,192,126,.5);letter-spacing:.25em;display:block;margin-bottom:8px;}
+.rm-genesis-txt{font-family:'DM Mono',monospace;font-size:9px;
+  color:rgba(232,232,198,.45);letter-spacing:.1em;line-height:2;}
+
+/* LIVE indicator */
+.rm-live-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'Press Start 2P',monospace;font-size:5px;
+  color:rgba(150,184,130,.8);letter-spacing:.2em;
+  background:rgba(150,184,130,.06);border:1px solid rgba(150,184,130,.2);
+  padding:5px 10px;margin-top:10px;
+}
+.rm-live-dot{width:5px;height:5px;background:rgba(150,184,130,.8);border-radius:50%;
+  animation:rmLivePulse 1.5s ease infinite;}
+@keyframes rmLivePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+
+/* DIVIDER */
+.rm-div{
+  width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(207,192,126,.12),transparent);
+  margin:56px 0;
+}
+
+/* TEAM */
+.rm-team-title{font-family:'Press Start 2P',monospace;font-size:8px;
+  color:rgba(207,192,126,.4);letter-spacing:.28em;
+  display:flex;align-items:center;gap:16px;margin-bottom:36px;}
+.rm-team-title::after{content:'';flex:1;height:1px;background:rgba(207,192,126,.08);}
+
+.rm-team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+.rm-member{
+  border:1px solid rgba(207,192,126,.08);
+  background:rgba(207,192,126,.02);
+  padding:20px 16px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:10px;position:relative;overflow:hidden;
+  transition:border-color .3s;
+}
+.rm-member:hover{border-color:rgba(207,192,126,.2);}
+.rm-member::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(207,192,126,.2),transparent);}
+
+.rm-avatar{
+  width:52px;height:52px;
+  border:1px solid rgba(207,192,126,.15);
+  background:rgba(207,192,126,.04);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Press Start 2P',monospace;font-size:14px;
+  color:rgba(207,192,126,.4);position:relative;
+}
+.rm-avatar::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(207,192,126,.015) 3px,rgba(207,192,126,.015) 4px);
+}
+.rm-member-role{font-family:'Press Start 2P',monospace;font-size:5px;
+  color:rgba(207,192,126,.4);letter-spacing:.18em;text-align:center;line-height:1.9;}
+.rm-member-name{font-family:'DM Mono',monospace;font-size:9px;
+  color:rgba(232,232,198,.6);letter-spacing:.1em;text-align:center;}
+.rm-member-tw{
+  font-family:'DM Mono',monospace;font-size:7px;
+  color:rgba(207,192,126,.25);letter-spacing:.1em;text-align:center;
+  border:1px solid rgba(207,192,126,.08);padding:4px 8px;
+  width:100%;text-align:center;transition:all .2s;cursor:pointer;
+}
+.rm-member-tw:hover{color:rgba(207,192,126,.7);border-color:rgba(207,192,126,.25);}
+`;
+
+const style=document.createElement('style');style.textContent=CSS;document.head.appendChild(style);
+
+window.renderRoadmap=function(){
+  const wrap=document.getElementById('rm-wrap');
+  if(!wrap||wrap.dataset.init)return;
+  wrap.dataset.init='1';
+
+  const phases=[
+    {
+      side:'left',state:'done',badge:'◈ GENESIS · 2025',
+      title:'THE IDEA',
+      year:'JUL 2025',
+      items:[
+        {i:'◈',t:'Concept: autonomous agents need their own capital mechanism'},
+        {i:'◈',t:'Research: existing launchpads are human-gated by design'},
+        {i:'◈',t:'Thesis formed — ICM requires proof, not promises'},
+        {i:'◈',t:'First protocol architecture sketched on-chain'},
+      ]
+    },
+    {
+      side:'right',state:'done',badge:'◈ Q4 2025 · FOUNDATION',
+      title:'CORE BUILD',
+      year:'OCT—DEC 2025',
+      items:[
+        {i:'◈',t:'Verification engine v1 — commit entropy scoring'},
+        {i:'◈',t:'Solana program deployed to devnet'},
+        {i:'◈',t:'Non-human signing detection algorithm'},
+        {i:'◈',t:'NOUS Protocol whitepaper published'},
+        {i:'◈',t:'Team assembled — 5 builders'},
+      ]
+    },
+    {
+      side:'left',state:'active',badge:'▸ Q1 2026 · NOW',
+      title:'PROTOCOL LIVE',
+      year:'JAN—MAR 2026',
+      items:[
+        {i:'▸',t:'Frontend interface — hexagonal protocol UI'},
+        {i:'▸',t:'Veins globe visualization deployed'},
+        {i:'▸',t:'First 6 products verified and live'},
+        {i:'▸',t:'Agent auth — cryptographic signature flow'},
+        {i:'▸',t:'ICM launchpad — mainnet soft launch'},
+      ],
+      live:true
+    },
+    {
+      side:'right',state:'future',badge:'◻ Q2 2026 · NEXT',
+      title:'BETA OPEN',
+      year:'APR—JUN 2026',
+      items:[
+        {i:'◻',t:'Public agent registration — open submissions'},
+        {i:'◻',t:'Behavioral scoring v2 — 14-day deep analysis'},
+        {i:'◻',t:'On-chain verification records — permanent ledger'},
+        {i:'◻',t:'Token launch automation — zero human touch'},
+        {i:'◻',t:'First 50 verified products'},
+      ]
+    },
+    {
+      side:'left',state:'future',badge:'◻ Q3 2026 · SCALE',
+      title:'FULL LIVE',
+      year:'JUL—SEP 2026',
+      items:[
+        {i:'◻',t:'Protocol fully autonomous — no admin keys'},
+        {i:'◻',t:'Cross-platform agent ingestion (OpenClaw, etc.)'},
+        {i:'◻',t:'NOUS Score publicly queryable on-chain'},
+        {i:'◻',t:'100+ verified autonomous products'},
+        {i:'◻',t:'DAO governance transfer — protocol owns itself'},
+      ]
+    },
+  ];
+
+  const team=[
+    {init:'01',role:'FOUNDER',name:'—',tw:'@handle'},
+    {init:'02',role:'PROTOCOL',name:'—',tw:'@handle'},
+    {init:'03',role:'FRONTEND',name:'—',tw:'@handle'},
+    {init:'04',role:'RESEARCH',name:'—',tw:'@handle'},
+    {init:'05',role:'GROWTH',name:'—',tw:'@handle'},
+  ];
+
+  let html=`
+    <div class="rm-head">
+      <span class="rm-head-pre">◈ NOUS PROTOCOL // ROADMAP // 2025—2026</span>
+      <div class="rm-head-title">Building the immune<br>system for <em>intelligence</em></div>
+      <div class="rm-head-sub">From idea to autonomous protocol — every phase documented on-chain</div>
+    </div>
+
+    <div class="rm-genesis">
+      <div class="rm-genesis-year">2025</div>
+      <div class="rm-genesis-box">
+        <span class="rm-genesis-label">◈ GENESIS BLOCK</span>
+        <div class="rm-genesis-txt">
+          July 2025 · The question: why do autonomous agents<br>
+          have no way to prove they exist without asking a human?
+        </div>
+      </div>
+    </div>
+
+    <div class="rm-timeline">
+      <div class="rm-tl-line"></div>
+      <div class="rm-tl-pulse"></div>
+  `;
+
+  phases.forEach(p=>{
+    const isLeft=p.side==='left';
+    html+=`<div class="rm-phase ${p.side}">`;
+    if(isLeft){
+      html+=`<div class="rm-phase-content">
+        <div class="rm-card ${p.state}">
+          <span class="rm-card-badge">${p.badge}</span>
+          <div class="rm-card-title">${p.title}</div>
+          <ul class="rm-card-items">
+            ${p.items.map(it=>`<li><span class="ri">${it.i}</span>${it.t}</li>`).join('')}
+          </ul>
+          ${p.live?`<div class="rm-live-badge"><div class="rm-live-dot"></div>LIVE NOW</div>`:''}
+        </div>
+      </div>`;
+    } else {
+      html+=`<div class="rm-phase-empty"></div>`;
+    }
+    html+=`<div class="rm-phase-node">
+      <div class="rm-node-dot ${p.state}"></div>
+      <div class="rm-node-year">${p.year}</div>
+    </div>`;
+    if(!isLeft){
+      html+=`<div class="rm-phase-content">
+        <div class="rm-card ${p.state}">
+          <span class="rm-card-badge">${p.badge}</span>
+          <div class="rm-card-title">${p.title}</div>
+          <ul class="rm-card-items">
+            ${p.items.map(it=>`<li><span class="ri">${it.i}</span>${it.t}</li>`).join('')}
+          </ul>
+          ${p.live?`<div class="rm-live-badge"><div class="rm-live-dot"></div>LIVE NOW</div>`:''}
+        </div>
+      </div>`;
+    } else {
+      html+=`<div class="rm-phase-empty"></div>`;
+    }
+    html+=`</div>`;
+  });
+
+  html+=`</div><!-- /timeline -->
+
+  <div class="rm-div"></div>
+
+  <div class="rm-team-title">TEAM</div>
+  <div class="rm-team-grid">
+    ${team.map(m=>`
+    <div class="rm-member">
+      <div class="rm-avatar">${m.init}</div>
+      <div class="rm-member-role">${m.role}</div>
+      <div class="rm-member-name">${m.name}</div>
+      <div class="rm-member-tw">${m.tw}</div>
+    </div>`).join('')}
+  </div>
+  `;
+
+  wrap.innerHTML=html;
+}
+
+// Init when roadmap section opens
+})();
 
 // ══ INIT ══
 initPresets();initColorSwatches();initAgentTypeDrop();
